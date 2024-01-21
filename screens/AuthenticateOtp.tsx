@@ -25,8 +25,8 @@ const AuthenticateOtp = () => {
 
 
     async function signInWithPhoneNumber(phoneNumber:string) {
-        console.log("opening chrome");
-        const confirmation:FirebaseAuthTypes.ConfirmationResult = await auth().signInWithPhoneNumber(phoneNumber);
+        console.log("opening chrome for phno"+phoneNumber);
+        const confirmation = await auth().signInWithPhoneNumber(phoneNumber);
         setConfirm(confirmation);
     
       }
@@ -34,15 +34,15 @@ const AuthenticateOtp = () => {
       async function confirmCode() {
         console.log("otp entered is "+OTP);
         
-          await confirm.confirm(OTP).then(async(result)=>{ dispatcher(AuthReducerSlice.actions.acceptOtp());}).catch((error)=>{console.log(error);});
+          await confirm.confirm(OTP).then(async(result)=>{ dispatcher(AuthReducerSlice.actions.acceptOtp());navigator.goBack();}).catch((error)=>{console.log(error);});
     
       }
 
       useEffect(()=>
       {
         console.log(mobileNumber);
-        signInWithPhoneNumber(mobileNumber);
-      });
+        signInWithPhoneNumber("+91 "+mobileNumber);
+      },[]);
 
 
 
