@@ -14,7 +14,7 @@ export interface MyBottomSheetState
 const initialState:MyBottomSheetState={
     My_Bottom_Sheet_Handle_Index:0,
     My_Bottom_Sheet_Sanp_Points_Array:["25%","50%","90%"],
-    My_Bottom_Sheet_Background_Color:'grey',
+    My_Bottom_Sheet_Background_Color:'white',
 
 }
 
@@ -44,7 +44,7 @@ export const MyBottomSheetReducerSlice = createSlice(
                    }
                    else
                    {
-                    state.My_Bottom_Sheet_Background_Color="grey";
+                    state.My_Bottom_Sheet_Background_Color="white";
                    }
             }
             

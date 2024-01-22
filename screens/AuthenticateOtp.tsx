@@ -5,14 +5,15 @@ import { RootState } from '../redux/store';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Image } from 'react-native';
 import { OtpInput } from 'react-native-otp-entry';
-import { FirebaseAuthTypes } from '@react-native-firebase/auth';
 import auth from '@react-native-firebase/auth'
 import { useNavigation } from '@react-navigation/native';
 import AuthReducer, { AuthReducerSlice } from '../redux/reducers/AuthReducer';
 import { TouchableOpacity } from 'react-native-gesture-handler';
+import { getMobileNumber, getOtpStatus, getProfile, getProfilePassengerFunction, setProfile, storeMobileNumber, storeOtpStatus, updateProfile } from '../firebase/firestoreActions';
 
 const AuthenticateOtp = () => {
 
+   const [status,setStatus] = useState("");
     const {mobileNumber,otpAuthStatus}  = useSelector((state:RootState)=>state.AuthAccess);
     const [OTP,setOtp] = useState("");
 
@@ -34,9 +35,43 @@ const AuthenticateOtp = () => {
       async function confirmCode() {
         console.log("otp entered is "+OTP);
         
-          await confirm.confirm(OTP).then(async(result)=>{ dispatcher(AuthReducerSlice.actions.acceptOtp());navigator.goBack();}).catch((error)=>{console.log(error);});
+          await confirm.confirm(OTP).then(async(result)=>{
+             if(await getProfilePassengerFunction(mobileNumber)==null)
+             {
+                setStatus("no profile found");
+                try
+                {
+               dispatcher(setProfile({profile:{emergencyContact:"",gender:"",mobile:mobileNumber,name:""}}));
+                }
+                catch(err)
+                {
+                      setStatus("error in updating profile");
+                }
+             }
+             else
+             {
+              dispatcher(getProfile(mobileNumber));
+             } 
+            
+
+             await storeMobileNumber(mobileNumber);
+
+             await storeOtpStatus("yes");
+
+             dispatcher(AuthReducerSlice.actions.acceptOtp());
+
+             dispatcher(AuthReducerSlice.actions.updatephno(mobileNumber));
+
+             dispatcher(getProfilePassengerFunction(mobileNumber));
+
+             navigator.goBack();
+            }).catch((error)=>{console.log(error);});
     
       }
+
+
+     
+
 
       useEffect(()=>
       {
@@ -59,7 +94,7 @@ const AuthenticateOtp = () => {
                 { OTP.length==6     && <Button  title='Continue' color="black"  onPress={async()=>{await confirmCode();}}  ></Button> }
                             
                     </TouchableOpacity>
-
+       <Text>{status}</Text>
          
     </SafeAreaView>
   )

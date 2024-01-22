@@ -1,16 +1,26 @@
-import React, { useCallback, useMemo, useRef } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useCallback, useMemo, useRef, useState } from 'react';
+import { View, Text, StyleSheet, Button, TextInput } from 'react-native';
 import BottomSheet from '@gorhom/bottom-sheet';
 import {SafeAreaView} from 'react-native-safe-area-context'
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import { updateProfile } from '../firebase/firestoreActions';
 
 
-const MyBottomSheet = () => {
+const MyBottomActionSheet = () => {
   // ref
   const bottomSheetRef = useRef<BottomSheet>(null);
 
+  const Dispatcher = useDispatch();
+
+
+
+  const  {name,mobileNumber,gender,EmergencyContact} = useSelector((state:RootState)=>state.profile);
+  let [nm,setnm]=useState(name);
+
   // variables
-  const snapPoints = useMemo(() => ['25%', '50%'], []);
+  const snapPoints = useMemo(() => ['25%', '50%',"90%"], []);
 
   // callbacks
   const handleSheetChanges = useCallback((index: number) => {
@@ -20,18 +30,32 @@ const MyBottomSheet = () => {
   // renders
   return (
       
-      <View style={styles.container}>
+      
       <BottomSheet
         ref={bottomSheetRef}
         index={1}
         snapPoints={snapPoints}
         onChange={handleSheetChanges}
+        style={{backgroundColor:"#c0fffe",borderColor:"black",borderWidth:0.5}}
       >
-        <View style={styles.contentContainer}>
-          <Text>Awesome 🎉</Text>
+        <View >
+          <Text>Please Enter your Desired Value 🎉</Text>
+          <View style={{alignItems:'center'}}>
+            <TextInput textAlign='centre' onChangeText={(text)=>{setnm(text);}} style={{borderWidth:0.5,borderRadius:25}} placeholder='you input here'></TextInput>
+            <View style={{height:10}}></View>
+          <Button onPress={async()=>
+          {
+             Dispatcher(updateProfile({profile:{emergencyContact:"",gender:"",mobile:mobileNumber,name:nm}}));
+             bottomSheetRef.current?.close();
+          }}
+          
+            
+            
+            title='update' ></Button>
+          </View>
         </View>
       </BottomSheet>
-    </View>
+ 
     
     
  
@@ -50,4 +74,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default MyBottomSheet;
+export default MyBottomActionSheet;

@@ -1,5 +1,5 @@
 import { Button, StyleSheet, Text, TextInput, Touchable, View } from 'react-native';
-import React from 'react';
+import React, { useEffect } from 'react';
 import Icon from 'react-native-ico-flags';
 import { Image } from 'react-native';
 import { TouchableOpacity } from 'react-native-gesture-handler';
@@ -7,6 +7,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '../redux/store';
 import { AuthReducerSlice } from '../redux/reducers/AuthReducer';
 import { useNavigation } from '@react-navigation/native';
+import { getMobileNumber, getOtpStatus } from '../firebase/firestoreActions';
 
 const LoginScreen = () => {
  
@@ -15,6 +16,28 @@ const LoginScreen = () => {
    const navigator = useNavigation();
 
    const Dispatcher = useDispatch();
+
+
+   const check_auth_and_send_otp_if_not_signed_in =async()=>
+   {
+
+   const otpstatus=   await getOtpStatus();
+   const mobilenumber_status =await getMobileNumber();
+
+   if(otpstatus!=null && otpstatus=="yes" && mobilenumber_status!=null && mobilenumber_status!="")
+   {
+           Dispatcher(AuthReducerSlice.actions.updatephno(mobilenumber_status));
+           Dispatcher(AuthReducerSlice.actions.acceptOtp());
+   }
+   
+   }
+
+    useEffect(()=>{
+
+       check_auth_and_send_otp_if_not_signed_in();
+
+
+    },[]);
  
  
     return (
@@ -29,10 +52,10 @@ const LoginScreen = () => {
     <View style={{height:20,backgroundColor:"#faf3dd"}}>
      <Icon name="india" height="20" width="30" />
      </View>
-     <View style={{height:20,width:24,backgroundColor:"#faf3dd"}}>
+     <View style={{height:20,width:30,backgroundColor:"#faf3dd"}}>
       <Text style={{color:"black"}}>+91</Text>
      </View>
-     <View style={{height:20,width:6}}/>
+     <View style={{height:20,width:12}}/>
      <TextInput onChangeText={(mobile_number)=>{Dispatcher(AuthReducerSlice.actions.updatephno(mobile_number));}} inputMode='tel' maxLength={10} placeholder='Your Number Here'   style={{height:40,borderColor:"grey",borderWidth:0.5,borderRadius:50,textAlign:'center'}} ></TextInput>
     </View>
          
