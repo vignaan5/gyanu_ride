@@ -16,6 +16,7 @@ export interface MapState
 canSelectPickUpMarker:boolean,
 canSelectDropMarker:boolean,
 
+
 }
 
 

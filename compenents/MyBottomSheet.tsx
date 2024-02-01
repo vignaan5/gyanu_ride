@@ -16,6 +16,7 @@ import { mapStyle } from './MapStyle';
 import tw from 'tailwind-react-native-classnames'
 import Geocoder from 'react-native-geocoding';
 import MapViewDirections from 'react-native-maps-directions';
+import { Image } from 'react-native';
 
 
 
@@ -66,6 +67,12 @@ const MyBottomSheet = () => {
       <MapView
     provider="google"
      ref={mapRef}
+     showsUserLocation={true}
+     showsMyLocationButton={true}
+
+
+      
+     
   initialRegion={{
     latitude: PickupLatittude,
     longitude: PickupLongitude,
@@ -79,23 +86,11 @@ const MyBottomSheet = () => {
                   {
                       
                        
-                       Geocoder.from(r.latitude,r.longitude).then((data)=>{
-                        let fetchDetails=data.results[0].formatted_address;
-      
-
-                         PickupLoc_SearchBarRef.current?.setAddressText(fetchDetails);
-      
-                       });
+                     
                   }
                   else if(!PickupMarkerVisible && DropMarkerVisible && canSelectDropMarker)
                   {
-                    Geocoder.from(r.latitude,r.longitude).then((data)=>{
-                      let fetchDetails=data.results[0].formatted_address;
-    
-
-                       DropLoc_SearchBarRef.current?.setAddressText(fetchDetails);
-    
-                     });
+                   
                   }
 
                 }}
@@ -111,12 +106,7 @@ const MyBottomSheet = () => {
                  //setplat(r.latitude);
                  //setplng(r.longitude);
                  
-                 Geocoder.from(r.latitude,r.longitude).then((data)=>{
-                  let fetchDetails=data.results[0].formatted_address;
-
-                  console.log(fetchDetails);
-
-                 });
+              
             }
             else if(!PickupMarkerVisible && DropMarkerVisible && canSelectDropMarker)
             {
@@ -144,7 +134,7 @@ const MyBottomSheet = () => {
 </Marker>
 }
     
-{  PickupMarkerVisible && DropLongitude &&
+{  PickupMarkerVisible && DropMarkerVisible &&
     <MapViewDirections origin={{latitude:PickupLatittude,longitude:PickupLongitude}} destination={{latitude:DropLatitude,longitude:DropLongitude}} strokeColor="black" strokeWidth={3} apikey={GOOGLE_MAPS_API_KEY} onReady={result=>{mapRef.current.fitToCoordinates(result.coordinates,{edgePadding:{right:30,bottom:100,left:30,top:100}})}} >
 
     </MapViewDirections>
@@ -156,8 +146,32 @@ const MyBottomSheet = () => {
 
     <View style={{height:100}}></View>
     <View style={{alignContent:"flex-end",alignItems:"center"}}>
-      {PickupMarkerVisible && !DropMarkerVisible && <Button  title="Confirm pickup location"  onPress={()=>{Dispatcher(MapSlice.actions.showDmarker()); bottomSheetRef.current?.snapToIndex(0);Dispatcher(MapSlice.actions.DeselectPickUpMarker());}}     ></Button> }
-      {DropMarkerVisible && !PickupMarkerVisible && <Button title="Confirm drop location" onPress={()=>{Dispatcher(MapSlice.actions.showPmarker()); bottomSheetRef.current?.snapToIndex(0); Dispatcher(MapSlice.actions.DeselectDropMarker());}}></Button> }
+      
+      
+      {PickupMarkerVisible && !DropMarkerVisible && <Button  title="Confirm pickup location"  onPress={()=>{Dispatcher(MapSlice.actions.showDmarker()); bottomSheetRef.current?.snapToIndex(0);Dispatcher(MapSlice.actions.DeselectPickUpMarker());
+      
+      Geocoder.from(PickupLatittude,PickupLongitude).then((data)=>{
+        let fetchDetails=data.results[0].formatted_address;
+          PickupLoc_SearchBarRef.current?.setAddressText(fetchDetails);
+        console.log(fetchDetails);
+
+       });
+      
+      }}     ></Button> }
+      
+      
+      
+      
+      {DropMarkerVisible && !PickupMarkerVisible && <Button title="Confirm drop location" onPress={()=>{Dispatcher(MapSlice.actions.showPmarker()); bottomSheetRef.current?.snapToIndex(0); Dispatcher(MapSlice.actions.DeselectDropMarker());
+      
+      Geocoder.from(DropLatitude,DropLongitude).then((data)=>{
+        let fetchDetails=data.results[0].formatted_address;
+        DropLoc_SearchBarRef.current?.setAddressText(fetchDetails);
+        console.log(fetchDetails);
+
+       });
+      
+      }}></Button> }
     </View>
     
 
@@ -172,10 +186,13 @@ const MyBottomSheet = () => {
         <View style={{}}>
           <View style={{height:10}}></View>
            
+           <Pressable onPress={()=>{navigator.navigate('menu')}}>
+           <Image  source={require("../images/hamburgerIcon.png")} style={{marginLeft:10,marginBottom:5}}></Image>
+           </Pressable>
            
           <GooglePlacesAutocomplete
                    placeholder='🟢 Search Your Location'
-                    //ref={pl_ref}
+                    ref={PickupLoc_SearchBarRef}
                    listHoverColor="grey"
 
                    styles={{container:{flex:0,},textInput:{fontSize:18,backgroundColor:"#D3D3D3"},}}
@@ -198,9 +215,13 @@ const MyBottomSheet = () => {
                           
                      //setplat(details?.geometry.location.lat);
                     // setplng(details?.geometry.location.lng);   
-                     //sheetRef.current?.snapToIndex(0); 
+                     
+
+                     Dispatcher(MapSlice.actions.AssignPickupMarkerCoords([details?.geometry.location.lat,details?.geometry.location.lng]));
 
                      console.log(details?.geometry.location.lat+" "+details?.geometry.location.lng);
+
+                     bottomSheetRef.current?.snapToIndex(0); 
                       
                   }}
 
@@ -228,7 +249,7 @@ const MyBottomSheet = () => {
               <GooglePlacesAutocomplete
                    placeholder='🔴 Search Destination'
 
-                   //ref={searchDest}
+                   ref={DropLoc_SearchBarRef}
 
                    
 
@@ -249,10 +270,13 @@ const MyBottomSheet = () => {
                                 
                                  
                               
-                                
+                                Dispatcher(MapSlice.actions.AssignDropMarkerCoords([details?.geometry.location.lat,details?.geometry.location.lng]));
+
                                  //setdlat(details?.geometry.location.lat);
                                 // setdlng(details?.geometry.location.lng);    
-                                // sheetRef.current?.snapToIndex(0);
+                                 bottomSheetRef.current?.snapToIndex(0);
+
+                                
 
                                   
                               }}
@@ -282,7 +306,7 @@ const MyBottomSheet = () => {
               </TouchableOpacity>
               
            
-          <Button title='menu' onPress={()=>{console.log("pressed"); navigator.navigate('menu');}} ></Button>
+         
         
           
         </View>

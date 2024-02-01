@@ -11,6 +11,7 @@ import MapScreen from './MapScreen';
 import MenuScreen from './MenuScreen';
 import ProfileScreen from './ProfileScreen';
 import BottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet/BottomSheet';
+import ConfirmRideScreen from './ConfirmRideScreen';
 
 
 const Stack = createNativeStackNavigator();
@@ -45,6 +46,7 @@ const dispatcher = useDispatch();
         <Stack.Screen name='home' component={MyBottomSheet} options={{headerShown:false}}></Stack.Screen>
         <Stack.Screen name='menu' component={MenuScreen}></Stack.Screen>
         <Stack.Screen name='profile' component={ProfileScreen}></Stack.Screen>
+        <Stack.Screen name='confirmRide' component={ConfirmRideScreen}></Stack.Screen>
        </Stack.Navigator>
    
     }
