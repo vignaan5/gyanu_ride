@@ -1,6 +1,7 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import firestore from '@react-native-firebase/firestore';
+import firestore, { firebase } from '@react-native-firebase/firestore';
 import { createAsyncThunk } from '@reduxjs/toolkit';
+import { Double, Float } from 'react-native/Libraries/Types/CodegenTypes';
 
 
 export const getProfile = createAsyncThunk("getProfile",async(mobileNumber:string)=>{
@@ -30,6 +31,26 @@ export const updateProfile = createAsyncThunk("updateProfile",async(profile:obje
   
 });
 
+export async function getRideStatusDetails(mobileNumber:string)
+{
+  const firestoreData = await firestore().collection('RideQ').doc('Queue').get();
+    
+  if(firestoreData.data()==undefined)
+  {
+      return null;
+  }
+  else
+  {
+      console.log(firestoreData.data()[mobileNumber])
+      return firestoreData.data()[mobileNumber];
+  }
+  
+  console.log(firestoreData.data());
+
+  return null;
+}
+
+
 export const setProfile = createAsyncThunk("setProfile",async(profile:object)=>{
 
     console.log("setting Profile for "+profile["profile"]["mobile"]);
@@ -41,7 +62,16 @@ export const setProfile = createAsyncThunk("setProfile",async(profile:object)=>{
   
 });
 
+export async function createRideRequest(mobileNumber:string,pickuplat:Double,pickuplng:Double,dist:Double,fare:Double){
 
+        var profile = await getProfilePassengerFunction(mobileNumber);
+        var strmobile:string = profile["mobile"];
+        var rideRequestData = {[strmobile]:{accepted:false,approvedRiderMobile:"",ongoingride:false,passengerMobile:mobileNumber,pickupCoords:new firebase.firestore.GeoPoint(pickuplat, pickuplng),requestActive:true,farePrice:fare,distance:dist}}
+         
+        const firestoreData = await firestore().collection('RideQ').doc('Queue').set(rideRequestData,{merge:true})
+
+        return
+}
 
 
 

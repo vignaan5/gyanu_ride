@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { View, Text, StyleSheet, Button, Pressable } from 'react-native';
 import BottomSheet, { TouchableOpacity } from '@gorhom/bottom-sheet';
 import {SafeAreaView} from 'react-native-safe-area-context'
-import { FlatList, GestureHandlerRootView, ScrollView } from 'react-native-gesture-handler';
+import { FlatList, GestureHandlerRootView, ScrollView, State } from 'react-native-gesture-handler';
 import { useDispatch, useSelector } from 'react-redux';
 import { RootState, store } from '../redux/store';
 import MyBottomSheetReducer, { MyBottomSheetReducerSlice } from '../redux/reducers/MyBottomSheetReducer';
@@ -17,20 +17,29 @@ import tw from 'tailwind-react-native-classnames'
 import Geocoder from 'react-native-geocoding';
 import MapViewDirections from 'react-native-maps-directions';
 import { Image } from 'react-native';
+import { createRideRequest, getRideStatusDetails } from '../firebase/firestoreActions';
 
 
 const RideOptionsScreen = () => {
 
+    var [checkedTimes,setCheckedTimes]=useState(0);
+    var [checkRideAcceptedStatus,setCheckRideAcceptedStatus] = useState(false)
     var [bookcab,setCab] = useState(true)
     var [bookbike,setbike] = useState(false)
     var bottomSheetRef = useRef()
     var snapPoints:String = ["50%"]
+    var [distance,setDistance] = useState(0.0);
+    var [carPrice,setCarprice] = useState(0);
+    var [bikePrice,setBikeprice] = useState(0);
     const mapRef = useRef<MapView>();
     const{DropLatitude,DropLongitude,DropMarkerVisible,MapLatitude,MapLatitudeDelta,MapLongittudeDelta,MapLongitude,PickupLatittude,PickupLongitude,PickupMarkerVisible,canSelectPickUpMarker,canSelectDropMarker} =useSelector((state:RootState)=>state.Map);
+    const {mobileNumber} =useSelector((state:RootState)=>state.AuthAccess);
+    const [bookCabBtnStatus,setbookCabBtnStatus] = useState(false);
 
 
 
   return (
+        
     <>
     <View style={{flex:1}}>
          <MapView
@@ -68,7 +77,7 @@ const RideOptionsScreen = () => {
 
 
 
-<MapViewDirections origin={{latitude:PickupLatittude,longitude:PickupLongitude}} destination={{latitude:DropLatitude,longitude:DropLongitude}} strokeColor="black" strokeWidth={3} apikey={GOOGLE_MAPS_API_KEY} onReady={result=>{mapRef.current.fitToCoordinates(result.coordinates,{edgePadding:{right:30,bottom:100,left:30,top:100}})}} >
+<MapViewDirections origin={{latitude:PickupLatittude,longitude:PickupLongitude}} destination={{latitude:DropLatitude,longitude:DropLongitude}} strokeColor="black" strokeWidth={3} apikey={GOOGLE_MAPS_API_KEY} onReady={result=>{ mapRef.current.fitToCoordinates(result.coordinates,{edgePadding:{right:30,bottom:100,left:30,top:100}}); setDistance(result.distance) }} >
 
 </MapViewDirections>
 
@@ -92,7 +101,7 @@ const RideOptionsScreen = () => {
              <View style={{width:30}}></View>
              <Text style={{fontSize:30,color:"black"}}>BIKE</Text>
              <View style={{width:30}}></View>
-             <Text style={{fontSize:30,color:"black"}}>₹ 30</Text>
+             <Text style={{fontSize:30,color:"black"}}>₹ {Math.ceil(20+(7*distance))}</Text>
 
             </View>                      
            </View>
@@ -108,9 +117,9 @@ const RideOptionsScreen = () => {
             
             <Image style={{height:80,width:80}} source={require('../images/vectorcar.png')}></Image>
              <View style={{width:30}}></View>
-             <Text style={{fontSize:30,color:"black"}}>Car</Text>
+             <Text style={{fontSize:30,color:"black"}}>CAB</Text>
              <View style={{width:30}}></View>
-             <Text style={{fontSize:30,color:"black"}}>₹ 50</Text>
+             <Text style={{fontSize:30,color:"black"}}>₹ {Math.ceil(20+(11*distance))}</Text>
 
             </View>                      
            </View>
@@ -125,8 +134,12 @@ const RideOptionsScreen = () => {
                     <Button title='Book Bike'  color={"black"}></Button>
              </TouchableOpacity> }
 
-          { bookcab &&   <TouchableOpacity style={{margin:10,borderRadius:60,backgroundColor:"black",alignItems:'center'}}>
-                    <Button title='Book Cab'  color={"black"}></Button>
+          { bookcab &&   <TouchableOpacity disabled={bookCabBtnStatus} style={{margin:10,borderRadius:60,backgroundColor:"black",alignItems:'center'}}>
+                    <Button  disabled={bookCabBtnStatus}  title='Book Cab' onPress={async()=>{setbookCabBtnStatus(true); setTimeout(async() => {
+                  await createRideRequest(mobileNumber,PickupLatittude,PickupLongitude,distance,20+(11*distance));    
+                    }, 10000);   var actioncount=0;var interval = setInterval(async()=>{actioncount++;if(actioncount>=3){setTimeout(() => {
+                      
+                      setbookCabBtnStatus(false);          }, 5000);  clearInterval(interval);}var status=await getRideStatusDetails(mobileNumber); if(status==undefined){actioncount=0;}; console.log(status)},5000)  }}  color={"black"}></Button>
              </TouchableOpacity>}
 
            </ScrollView>
