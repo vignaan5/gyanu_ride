@@ -50,6 +50,20 @@ const MyBottomSheet = () => {
    const{DropLatitude,DropLongitude,DropMarkerVisible,MapLatitude,MapLatitudeDelta,MapLongittudeDelta,MapLongitude,PickupLatittude,PickupLongitude,PickupMarkerVisible,canSelectPickUpMarker,canSelectDropMarker} =useSelector((state:RootState)=>state.Map);
   
     
+    const navtorideoptions = async()=>{
+
+        if(PickupLoc_SearchBarRef.current?.getAddressText().length>0 && DropLoc_SearchBarRef.current?.getAddressText().length>0)
+        {
+          DropLoc_SearchBarRef.current?.setAddressText("");
+          navigator.navigate('rideoptions');
+
+        }
+
+    }
+
+
+
+
    useEffect(()=>
    {
      Geocoder.init(GOOGLE_MAPS_API_KEY);
@@ -85,12 +99,14 @@ const MyBottomSheet = () => {
                   if(PickupMarkerVisible && !DropMarkerVisible && canSelectPickUpMarker  )
                   {
                       
-                       
+                    Dispatcher(MapSlice.actions.AssignPickupMarkerCoords([r.latitude,r.longitude]));
+
                      
                   }
                   else if(!PickupMarkerVisible && DropMarkerVisible && canSelectDropMarker)
                   {
-                   
+                    Dispatcher(MapSlice.actions.AssignDropMarkerCoords([r.latitude,r.longitude]));
+
                   }
 
                 }}
@@ -101,8 +117,9 @@ const MyBottomSheet = () => {
       {
             if(PickupMarkerVisible && !DropMarkerVisible && canSelectPickUpMarker )
             {
-
               Dispatcher(MapSlice.actions.AssignPickupMarkerCoords([r.latitude,r.longitude]));
+
+
                  //setplat(r.latitude);
                  //setplng(r.longitude);
                  
@@ -110,6 +127,7 @@ const MyBottomSheet = () => {
             }
             else if(!PickupMarkerVisible && DropMarkerVisible && canSelectDropMarker)
             {
+
               Dispatcher(MapSlice.actions.AssignDropMarkerCoords([r.latitude,r.longitude]));
 
               //setdlat(r.latitude);
@@ -121,7 +139,7 @@ const MyBottomSheet = () => {
   style={tw`h-3/4`}
   customMapStyle={mapStyle}
   
-  zoomControlEnabled={true} >    
+  zoomControlEnabled={false} >    
         { PickupMarkerVisible &&
     <Marker coordinate={{latitude:PickupLatittude,longitude:PickupLongitude}}  image={require("../images/greenpin3.png")}  >
 
@@ -133,12 +151,14 @@ const MyBottomSheet = () => {
 
 </Marker>
 }
-    
-{  PickupMarkerVisible && DropMarkerVisible &&
-    <MapViewDirections origin={{latitude:PickupLatittude,longitude:PickupLongitude}} destination={{latitude:DropLatitude,longitude:DropLongitude}} strokeColor="black" strokeWidth={3} apikey={GOOGLE_MAPS_API_KEY} onReady={result=>{mapRef.current.fitToCoordinates(result.coordinates,{edgePadding:{right:30,bottom:100,left:30,top:100}})}} >
 
-    </MapViewDirections>
-} 
+	
+
+  
+    
+    
+
+
     
     </MapView>
        
@@ -155,6 +175,9 @@ const MyBottomSheet = () => {
           PickupLoc_SearchBarRef.current?.setAddressText(fetchDetails);
         console.log(fetchDetails);
 
+        navtorideoptions();
+
+
        });
       
       }}     ></Button> }
@@ -168,6 +191,9 @@ const MyBottomSheet = () => {
         let fetchDetails=data.results[0].formatted_address;
         DropLoc_SearchBarRef.current?.setAddressText(fetchDetails);
         console.log(fetchDetails);
+        
+        navtorideoptions();
+
 
        });
       
@@ -223,6 +249,8 @@ const MyBottomSheet = () => {
 
                      bottomSheetRef.current?.snapToIndex(0); 
                       
+                     navtorideoptions();
+
                   }}
 
                                       
@@ -276,7 +304,8 @@ const MyBottomSheet = () => {
                                 // setdlng(details?.geometry.location.lng);    
                                  bottomSheetRef.current?.snapToIndex(0);
 
-                                
+                                 navtorideoptions();
+
 
                                   
                               }}
