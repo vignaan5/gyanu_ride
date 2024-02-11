@@ -13,6 +13,8 @@ import ProfileScreen from './ProfileScreen';
 import BottomSheet from '@gorhom/bottom-sheet/lib/typescript/components/bottomSheet/BottomSheet';
 import ConfirmRideScreen from './ConfirmRideScreen';
 import RideOptionsScreen from './RideOptionsScreen';
+import RidePage from './RidePage';
+import { getRideStatus } from '../firebase/firestoreActions';
 
 
 const Stack = createNativeStackNavigator();
@@ -29,8 +31,16 @@ const dispatcher = useDispatch();
 
 
     const {mobileNumber,otpAuthStatus}  = useSelector((state:RootState)=>state.AuthAccess)
-    
+    const {passengerMobile,accepted,approvedRiderMobile,requestActive,distance,fareprice,ongoingride,pickuplat,pickuplng} = useSelector((state:RootState)=>state.CurrentRideStatus)
  
+   
+     useEffect(()=>{
+
+      dispatcher(getRideStatus(mobileNumber))
+
+ },[]);
+
+
   return (
     <>
     {!otpAuthStatus &&
@@ -41,7 +51,7 @@ const dispatcher = useDispatch();
     </Stack.Navigator>  }
 
 
-    {otpAuthStatus && 
+    {otpAuthStatus &&   !ongoingride &&
 
        <Stack.Navigator initialRouteName='home'>
         <Stack.Screen name='home' component={MyBottomSheet} options={{headerShown:false}}></Stack.Screen>
@@ -49,8 +59,18 @@ const dispatcher = useDispatch();
         <Stack.Screen name='profile' component={ProfileScreen}></Stack.Screen>
         <Stack.Screen name='rideoptions' component={RideOptionsScreen} options={{headerTransparent:true,headerTitle:""}}></Stack.Screen>
         <Stack.Screen name='confirmRide' component={ConfirmRideScreen}></Stack.Screen>
+        <Stack.Screen name='ongoingride' component={RidePage}></Stack.Screen>
        </Stack.Navigator>
    
+    }
+
+    {
+      ongoingride &&  <Stack.Navigator initialRouteName='currentRideScreen'>
+
+                         <Stack.Screen name='currentRideScreen' component={RidePage} options={{headerShown:false}}></Stack.Screen> 
+                         <Stack.Screen name='menu' component={MenuScreen}></Stack.Screen>
+             
+      </Stack.Navigator>  
     }
 
 

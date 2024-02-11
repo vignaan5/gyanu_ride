@@ -17,11 +17,12 @@ import tw from 'tailwind-react-native-classnames'
 import Geocoder from 'react-native-geocoding';
 import MapViewDirections from 'react-native-maps-directions';
 import { Image } from 'react-native';
-import { createRideRequest, getRideStatusDetails } from '../firebase/firestoreActions';
+import { FirebaseFirestoreTypes, firebase } from '@react-native-firebase/firestore';
+import { createRideRequest, getRideStatus, getRideStatusDetails } from '../firebase/firestoreActions';
 
 
 const RideOptionsScreen = () => {
-
+    const dispatcher = useDispatch();
     var [checkedTimes,setCheckedTimes]=useState(0);
     var [checkRideAcceptedStatus,setCheckRideAcceptedStatus] = useState(false)
     var [bookcab,setCab] = useState(true)
@@ -35,7 +36,7 @@ const RideOptionsScreen = () => {
     const{DropLatitude,DropLongitude,DropMarkerVisible,MapLatitude,MapLatitudeDelta,MapLongittudeDelta,MapLongitude,PickupLatittude,PickupLongitude,PickupMarkerVisible,canSelectPickUpMarker,canSelectDropMarker} =useSelector((state:RootState)=>state.Map);
     const {mobileNumber} =useSelector((state:RootState)=>state.AuthAccess);
     const [bookCabBtnStatus,setbookCabBtnStatus] = useState(false);
-
+    const navigator = useNavigation();
 
 
   return (
@@ -136,10 +137,10 @@ const RideOptionsScreen = () => {
 
           { bookcab &&   <TouchableOpacity disabled={bookCabBtnStatus} style={{margin:10,borderRadius:60,backgroundColor:"black",alignItems:'center'}}>
                     <Button  disabled={bookCabBtnStatus}  title='Book Cab' onPress={async()=>{setbookCabBtnStatus(true); setTimeout(async() => {
-                  await createRideRequest(mobileNumber,PickupLatittude,PickupLongitude,distance,20+(11*distance));    
-                    }, 10000);   var actioncount=0;var interval = setInterval(async()=>{actioncount++;if(actioncount>=3){setTimeout(() => {
+                  await createRideRequest(mobileNumber,PickupLatittude,PickupLongitude,distance,20+(11*distance),DropLatitude,DropLongitude);    
+                    }, 5000);   var actioncount=0;var interval = setInterval(async()=>{actioncount++;if(actioncount>=3){setTimeout(() => {
                       
-                      setbookCabBtnStatus(false);          }, 5000);  clearInterval(interval);}var status=await getRideStatusDetails(mobileNumber); if(status==undefined){actioncount=0;}; console.log(status)},5000)  }}  color={"black"}></Button>
+                      setbookCabBtnStatus(false);   }, 5000);  clearInterval(interval);}var status=undefined; status=await getRideStatusDetails(mobileNumber); if(status==undefined){actioncount=0;}else if(status["accepted"]){  clearInterval(interval); navigator.goBack(); dispatcher(getRideStatus(mobileNumber)); }; console.log(status)},10000)  }}  color={"black"}></Button>
              </TouchableOpacity>}
 
            </ScrollView>

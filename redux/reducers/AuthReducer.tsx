@@ -9,8 +9,8 @@ export interface AuthState
 
 
 const initialState:AuthState={
-    otpAuthStatus:true,
-    mobileNumber:"9603680535",
+    otpAuthStatus:false,
+    mobileNumber:"",
 }
 
 

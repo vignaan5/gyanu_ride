@@ -20,6 +20,37 @@ export const getProfile = createAsyncThunk("getProfile",async(mobileNumber:strin
   
 });
 
+export const getRideStatus = createAsyncThunk("getRideStatus",async(mobileNumber:string)=>{
+
+  console.log("checking if ride accepted ?");
+  const firestoreData = await firestore().collection('RideQ').doc('Queue').get();
+    
+  if(firestoreData.data()==undefined)
+  {
+      return null;
+  }
+  else
+  {
+      console.log("got rideStatus : "+firestoreData.data()[mobileNumber])
+      return firestoreData.data()[mobileNumber];
+  }
+  
+
+});
+
+export const endRideStatus = createAsyncThunk("endRideStatus",async(mobileNumber:string)=>{
+
+  console.log("checking if ride accepted ?");
+  const nested_Update = mobileNumber+".ongoingride";
+  const firestoreData = await firestore().collection('RideQ').doc('Queue').update({[nested_Update]:false});
+    
+
+  
+
+});
+
+
+
 
 export const updateProfile = createAsyncThunk("updateProfile",async(profile:object)=>{
 
@@ -62,11 +93,14 @@ export const setProfile = createAsyncThunk("setProfile",async(profile:object)=>{
   
 });
 
-export async function createRideRequest(mobileNumber:string,pickuplat:Double,pickuplng:Double,dist:Double,fare:Double){
+
+
+
+export async function createRideRequest(mobileNumber:string,pickuplat:Double,pickuplng:Double,dist:Double,fare:Double,droplat:Double,droplng:Double){
 
         var profile = await getProfilePassengerFunction(mobileNumber);
         var strmobile:string = profile["mobile"];
-        var rideRequestData = {[strmobile]:{accepted:false,approvedRiderMobile:"",ongoingride:false,passengerMobile:mobileNumber,pickupCoords:new firebase.firestore.GeoPoint(pickuplat, pickuplng),requestActive:true,farePrice:fare,distance:dist}}
+        var rideRequestData = {[strmobile]:{accepted:false,approvedRiderMobile:"",ongoingride:false,passengerMobile:mobileNumber,pickupCoords:new firebase.firestore.GeoPoint(pickuplat, pickuplng),requestActive:true,farePrice:fare,distance:dist,riderCoords:new firebase.firestore.GeoPoint(17.4239,78.4738),otp:Math.floor(Math.random() * 9000 + 1000),dropCoords:new firebase.firestore.GeoPoint(droplat, droplng)}}
          
         const firestoreData = await firestore().collection('RideQ').doc('Queue').set(rideRequestData,{merge:true})
 
